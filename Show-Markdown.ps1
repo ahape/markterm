@@ -13,34 +13,62 @@ param(
 
 
 begin {
-  $markterm = "$HOME/source/repos/markterm"
-  # Resolve script location:
-  # Option A: put show_rendered_markdown.py somewhere stable and set this to that full path.
-  # Option B: put it next to your profile and reference it from there.
-  $program = "show_rendered_markdown.py"
-  if (-not (Test-Path "$markterm/$program")) {
-      throw "Could not find $program"
+  # Use $PSScriptRoot to locate the script directory dynamically
+  $markterm = $PSScriptRoot
+
+  # Use the new package structure
+  $program = "markterm\cli.py"
+
+  # Check if running from repository (has cli.py)
+  if (Test-Path "$markterm/$program") {
+    $useLocalScript = $true
+  }
+  # Otherwise, try to use installed package
+  elseif (Get-Command markterm -ErrorAction SilentlyContinue) {
+    $useLocalScript = $false
+  }
+  else {
+    throw "Could not find markterm. Either run from repository or install with: pip install -e ."
   }
 }
 
 process {
   $resolved = Resolve-Path -LiteralPath $Path -ErrorAction Stop
-  try {
-    Push-Location $markterm
 
-    .venv/Scripts/Activate.ps1
+  if ($useLocalScript) {
+    # Use local development version
+    try {
+      Push-Location $markterm
 
-    # Skip theme for now, monokai code blocks look ugly
-    #$args = @($program, $resolved.Path, "--theme", $Theme)
-    $args = @($program, $resolved.Path)
+      # Activate virtual environment if it exists
+      if (Test-Path ".venv/Scripts/Activate.ps1") {
+        .venv/Scripts/Activate.ps1
+      }
+
+      # Build arguments
+      $args = @($program, $resolved.Path, "--theme", $Theme)
+      if ($PSBoundParameters.ContainsKey("Wrap")) {
+        $args += @("--wrap", $Wrap)
+      }
+
+      & ".venv/Scripts/python.exe" @args
+
+      # Deactivate if deactivate.bat exists
+      if (Test-Path ".venv/Scripts/deactivate.bat") {
+        & ".venv/Scripts/deactivate.bat"
+      }
+
+    } finally {
+      Pop-Location
+    }
+  }
+  else {
+    # Use installed package
+    $args = @($resolved.Path, "--theme", $Theme)
     if ($PSBoundParameters.ContainsKey("Wrap")) {
       $args += @("--wrap", $Wrap)
     }
 
-    & ".venv/Scripts/python.exe" @args
-    & ".venv/Scripts/deactivate.bat"
-
-  } finally {
-    Pop-Location
+    & markterm @args
   }
 }

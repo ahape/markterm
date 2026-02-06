@@ -14,4 +14,3 @@ let foo: number = 1
 namespace Program;
 file readonly record struct Foo(string Bar);
 ```
-

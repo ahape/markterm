@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """
 show_rendered_markdown.py
+
+DEPRECATED: This file is deprecated and kept for backward compatibility only.
+
+Please use the `markterm` package instead:
+  - Install: pip install -e .
+  - Usage: markterm <filename>
+  - Or: python -m markterm <filename>
+
+This script will be removed in a future version.
+
+---
+
 Render a Markdown file to ANSI and print it to the terminal.
 
 Dependencies:
