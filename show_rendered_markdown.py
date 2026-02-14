@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import os
 from pathlib import Path
 
 from rich.console import Console
@@ -52,7 +53,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    md_path = Path(args.file).expanduser()
+    file = Path(args.file)
+    if not file.is_absolute():
+      if caller_dir := os.environ.get("MARKDOWN_DIR"):
+        file = Path(caller_dir) / file
+    md_path = file.expanduser()
 
     if not md_path.exists():
         print(f"Error: file not found: {md_path}", file=sys.stderr)
