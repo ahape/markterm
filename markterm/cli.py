@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -140,7 +141,11 @@ def main() -> int:
         return EXIT_ERROR
 
     # Resolve file path
-    md_path = Path(args.file).expanduser().resolve()
+    file = Path(args.file)
+    if not file.is_absolute():
+        if caller_dir := os.environ.get("MARKDOWN_DIR"):
+            file = Path(caller_dir) / file
+    md_path = file.expanduser()
 
     # Read markdown file
     try:
