@@ -97,7 +97,9 @@ def read_markdown_file(path: Path) -> str:
     # Check file size
     file_size_mb = path.stat().st_size / (1024 * 1024)
     if file_size_mb > MAX_FILE_SIZE_MB:
-        raise OSError(f"File too large: {file_size_mb:.1f}MB (max: {MAX_FILE_SIZE_MB}MB)")
+        raise OSError(
+            f"File too large: {file_size_mb:.1f}MB (max: {MAX_FILE_SIZE_MB}MB)"
+        )
 
     try:
         return path.read_text(encoding="utf-8")
@@ -106,7 +108,9 @@ def read_markdown_file(path: Path) -> str:
         return path.read_text(encoding="utf-8-sig")
 
 
-def render_markdown(text: str, wrap_width: int | None = None, theme: str = "monokai") -> None:
+def render_markdown(
+    text: str, wrap_width: int | None = None, theme: str = "monokai"
+) -> None:
     """Render markdown text to the terminal.
 
     Args:

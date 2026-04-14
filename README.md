@@ -43,13 +43,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### Development Installation
 
-To install with development dependencies:
-
-```bash
-pip install -e ".[dev]"
-```
 
 ## Usage
 
@@ -138,59 +132,6 @@ The PowerShell script automatically:
 
 ## Development
 
-### Setting Up Development Environment
-
-```bash
-# Clone and navigate to repository
-git clone https://github.com/alanhape/markterm.git
-cd markterm
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-
-# Install with development dependencies
-pip install -e ".[dev]"
-
-# Install pre-commit hooks (recommended)
-pre-commit install
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=markterm
-
-# Run with detailed coverage report
-pytest --cov=markterm --cov-report=term-missing
-
-# Run specific test file
-pytest tests/test_cli.py
-
-# Run specific test class
-pytest tests/test_cli.py::TestMain
-```
-
-### Code Quality
-
-```bash
-# Lint with ruff
-ruff check markterm/ tests/
-
-# Format with ruff
-ruff format markterm/ tests/
-
-# Type check with mypy
-mypy markterm/
-
-# Run all pre-commit hooks
-pre-commit run --all-files
-```
-
 ### Building the Package
 
 ```bash
@@ -205,19 +146,7 @@ python -m build
 # - dist/markterm-0.1.0.tar.gz
 ```
 
-## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Quick Contribution Guide
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests and linting (`pytest`, `ruff check`, `mypy`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
 
 ## License
 
@@ -248,6 +177,3 @@ Markterm is built with:
 - Theme selection
 - Cross-platform support
 - PowerShell wrapper for Windows
-- Comprehensive test suite
-- CI/CD pipeline
-- Pre-commit hooks
