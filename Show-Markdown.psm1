@@ -9,7 +9,10 @@ function Show-Markdown {
     [int] $Wrap,
 
     [Parameter(Mandatory=$false)]
-    [string] $Theme = "monokai"
+    [string] $Theme = "monokai",
+
+    [Parameter(Mandatory=$false)]
+    [switch] $Html
   )
 
   begin {
@@ -30,6 +33,9 @@ function Show-Markdown {
       $args = @($program, $resolved.Path, "--theme", $Theme)
       if ($PSBoundParameters.ContainsKey("Wrap")) {
         $args += @("--wrap", $Wrap)
+      }
+      if ($Html) {
+        $args += @("--html")
       }
 
       & ".venv/Scripts/python.exe" @args

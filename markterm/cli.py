@@ -15,8 +15,11 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import tempfile
+import webbrowser
 from pathlib import Path
 
+from markdown_it import MarkdownIt
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -54,6 +57,11 @@ def parse_args() -> argparse.Namespace:
         default="monokai",
         metavar="THEME",
         help="Syntax highlighting theme for code blocks (default: monokai)",
+    )
+    parser.add_argument(
+        "--html",
+        action="store_true",
+        help="Convert to HTML and open in default browser",
     )
     return parser.parse_args()
 
@@ -164,11 +172,28 @@ def main() -> int:
         return EXIT_ERROR
 
     # Render markdown
-    try:
-        render_markdown(text, wrap_width=args.wrap, theme=args.theme)
-    except Exception as e:
-        print(f"Error rendering markdown: {e}", file=sys.stderr)
-        return EXIT_ERROR
+    if args.html:
+        try:
+            md = MarkdownIt()
+            md.enable(['table'])
+            html_content = md.render(text)
+            template_path = Path(__file__).parent / "template.html"
+            template = template_path.read_text()
+            full_html = template.replace("{{CONTENT}}", html_content)
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as temp_file:
+                temp_file.write(full_html)
+                temp_file_path = temp_file.name
+            webbrowser.open(f"file://{temp_file_path}")
+            print(f"HTML file opened: {temp_file_path}")
+        except Exception as e:
+            print(f"Error converting to HTML: {e}", file=sys.stderr)
+            return EXIT_ERROR
+    else:
+        try:
+            render_markdown(text, wrap_width=args.wrap, theme=args.theme)
+        except Exception as e:
+            print(f"Error rendering markdown: {e}", file=sys.stderr)
+            return EXIT_ERROR
 
     return EXIT_SUCCESS
 
