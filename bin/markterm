@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+export MARKDOWN_DIR="$PWD"
+cd "$PROJECT_DIR"
+exec "$PROJECT_DIR/.venv/bin/python3" "$PROJECT_DIR/show_rendered_markdown.py" "$@"
