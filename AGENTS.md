@@ -5,8 +5,8 @@
 
 ## Architecture
 - **Main entry**: `markterm/cli.py:main()`
-- **Core logic**: Functions in `markterm/cli.py` - parse_args, validate_args, read_markdown_file, render_markdown
-- **PowerShell wrapper**: `Show-Markdown.ps1` for Windows, auto-locates venv and runs Python command
+- **Core logic**: Functions in `markterm/cli.py` - parse_args, validate_args, read_markdown_file, render_markdown, render_browser_preview
+- **PowerShell wrapper**: `Show-Markdown.psm1` for Windows, forwards to the installed `markterm` command
 - **File limits**: 100MB max, UTF-8 & UTF-8-sig encodings
 - **Exit codes**: SUCCESS=0, ERROR=2
 
@@ -16,5 +16,5 @@
 - **Error handling**: Specific exceptions only, no broad try/except
 - **Imports**: Alphabetical sorting
 
-## Deprecated
-- `show_rendered_markdown.py`: Keep for compatibility, but use `markterm.cli` module entry
+## Compatibility
+- `--html`: Kept as a CLI alias for `--browser`

@@ -4,7 +4,7 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Render markdown beautifully in your terminal with syntax highlighting and rich formatting.
+Render markdown in your terminal or open a browser preview from the same command.
 
 ## Features
 
@@ -75,12 +75,18 @@ Combine options:
 markterm README.md --wrap 100 --theme github-dark
 ```
 
+Open a browser preview:
+
+```bash
+markterm README.md --browser
+```
+
 ### As a Python Module
 
 You can also run markterm as a Python module:
 
 ```bash
-python -m markterm README.md
+python -m markterm README.md --browser
 ```
 
 ### Available Themes
@@ -97,14 +103,31 @@ Markterm supports any theme available in [Pygments](https://pygments.org/styles/
 - `one-dark`
 - And many more!
 
-## PowerShell Integration (Windows)
+## Shell Integration
 
-For Windows users, a PowerShell wrapper is included for convenient usage:
+### Zsh / POSIX shells
 
-### Setup PowerShell
+After installing the package, use `markterm` directly:
 
-1. Copy `Show-Markdown.ps1` to a directory in your `$env:PATH` or your PowerShell profile directory
-2. Optionally, add the script directory to your PATH
+```bash
+markterm README.md
+markterm README.md --browser
+```
+
+If you want a friendlier shell name:
+
+```zsh
+alias show-markdown='markterm'
+```
+
+### PowerShell (Windows)
+
+Import the included module and use `Show-Markdown` as a thin wrapper over the
+installed `markterm` command.
+
+```powershell
+Import-Module .\Show-Markdown.psm1
+```
 
 ### Usage
 
@@ -118,17 +141,14 @@ Show-Markdown README.md -Wrap 80
 # With custom theme
 Show-Markdown README.md -Theme dracula
 
-# All options
-Show-Markdown README.md -Wrap 100 -Theme github-dark
+# Open a browser preview
+Show-Markdown README.md -Browser
 
 # Works with pipeline
 Get-Item README.md | Show-Markdown
 ```
 
-The PowerShell script automatically:
-- Locates the markterm installation (repository or installed package)
-- Activates the virtual environment (if using from repository)
-- Runs the command with proper arguments
+`-Html` is kept as an alias for `-Browser` for compatibility.
 
 ## Development
 

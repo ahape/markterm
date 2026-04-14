@@ -12,37 +12,39 @@ function Show-Markdown {
     [string] $Theme = "monokai",
 
     [Parameter(Mandatory=$false)]
-    [switch] $Html
+    [Alias("Html")]
+    [switch] $Browser
   )
 
   begin {
-    $markterm = "C:\Users\AlanHape\source\repos\markterm"
-    $program = Join-Path $markterm "markterm" "cli.py"
-
-    if (-not (Test-Path $program)) {
-      throw "Could not find markterm. Either run from repository or install with: pip install -e ."
+    $markterm = Get-Command markterm -ErrorAction SilentlyContinue
+    if (-not $markterm) {
+      $python = Get-Command py -ErrorAction SilentlyContinue
+      if (-not $python) {
+        $python = Get-Command python -ErrorAction SilentlyContinue
+      }
+      if (-not $python) {
+        throw "Could not find 'markterm' or a Python launcher on PATH. Install markterm or activate the environment first."
+      }
     }
   }
 
   process {
     $resolved = Resolve-Path -LiteralPath $Path -ErrorAction Stop
-    try {
-      Push-Location $markterm
-
-      # Build arguments
-      $args = @($program, $resolved.Path, "--theme", $Theme)
-      if ($PSBoundParameters.ContainsKey("Wrap")) {
-        $args += @("--wrap", $Wrap)
-      }
-      if ($Html) {
-        $args += @("--html")
-      }
-
-      & ".venv/Scripts/python.exe" @args
-
-    } finally {
-      Pop-Location
+    $args = @($resolved.Path, "--theme", $Theme)
+    if ($PSBoundParameters.ContainsKey("Wrap")) {
+      $args += @("--wrap", $Wrap)
     }
+    if ($Browser) {
+      $args += @("--browser")
+    }
+
+    if ($markterm) {
+      & $markterm.Source @args
+      return
+    }
+
+    & $python.Source -m markterm @args
   }
 }
 

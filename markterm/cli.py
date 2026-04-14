@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
-"""Render a Markdown file to ANSI and print it to the terminal.
+"""Render a Markdown file in the terminal or open a browser preview.
 
 This module provides a command-line interface for rendering markdown files
-with syntax highlighting and rich formatting using the Rich library.
+with syntax highlighting and rich formatting using the Rich library or opening
+an HTML preview in the default browser.
 
 Usage:
     markterm README.md
     markterm README.md --wrap 100
     markterm README.md --theme monokai
+    markterm README.md --browser
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 import tempfile
 import webbrowser
 from pathlib import Path
 
 from markdown_it import MarkdownIt
+from pygments.util import ClassNotFound
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -35,10 +37,11 @@ def parse_args() -> argparse.Namespace:
     """Parse command-line arguments.
 
     Returns:
-        Parsed arguments containing file path, optional wrap width, and theme.
+        Parsed arguments containing file path, optional wrap width, theme,
+        and browser preview mode.
     """
     parser = argparse.ArgumentParser(
-        description="Render a Markdown file in the terminal with syntax highlighting.",
+        description="Render a Markdown file in the terminal or open a browser preview.",
         epilog="Example: markterm README.md --wrap 100 --theme monokai",
     )
     parser.add_argument(
@@ -59,9 +62,11 @@ def parse_args() -> argparse.Namespace:
         help="Syntax highlighting theme for code blocks (default: monokai)",
     )
     parser.add_argument(
+        "--browser",
         "--html",
         action="store_true",
-        help="Convert to HTML and open in default browser",
+        dest="browser",
+        help="Open a browser preview instead of rendering in the terminal",
     )
     return parser.parse_args()
 
@@ -132,10 +137,42 @@ def render_markdown(
     console.print(md)
 
 
+def render_browser_preview(text: str) -> Path:
+    """Render markdown text to HTML and open it in the default browser.
+
+    Args:
+        text: The markdown content to preview.
+
+    Returns:
+        The path to the generated temporary HTML file.
+
+    Raises:
+        OSError: If the HTML template cannot be read or the preview file
+            cannot be written.
+    """
+    md = MarkdownIt()
+    md.enable(["table"])
+    html_content = md.render(text)
+
+    template_path = Path(__file__).with_name("template.html")
+    template = template_path.read_text(encoding="utf-8")
+    full_html = template.replace("{{CONTENT}}", html_content)
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", suffix=".html", delete=False
+    ) as temp_file:
+        temp_file.write(full_html)
+        temp_file_path = Path(temp_file.name)
+
+    webbrowser.open(temp_file_path.as_uri())
+    return temp_file_path
+
+
 def main() -> int:
     """Main entry point for the markterm CLI.
 
-    Parses arguments, reads the markdown file, and renders it to the terminal.
+    Parses arguments, reads the markdown file, and renders it to the terminal
+    or opens a browser preview.
 
     Returns:
         Exit code: EXIT_SUCCESS (0) for success, EXIT_ERROR (2) for errors.
@@ -149,11 +186,7 @@ def main() -> int:
         return EXIT_ERROR
 
     # Resolve file path
-    file = Path(args.file)
-    if not file.is_absolute():
-        if caller_dir := os.environ.get("MARKDOWN_DIR"):
-            file = Path(caller_dir) / file
-    md_path = file.expanduser()
+    md_path = Path(args.file).expanduser()
 
     # Read markdown file
     try:
@@ -172,28 +205,20 @@ def main() -> int:
         return EXIT_ERROR
 
     # Render markdown
-    if args.html:
+    if args.browser:
         try:
-            md = MarkdownIt()
-            md.enable(['table'])
-            html_content = md.render(text)
-            template_path = Path(__file__).parent / "template.html"
-            template = template_path.read_text()
-            full_html = template.replace("{{CONTENT}}", html_content)
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as temp_file:
-                temp_file.write(full_html)
-                temp_file_path = temp_file.name
-            webbrowser.open(f"file://{temp_file_path}")
-            print(f"HTML file opened: {temp_file_path}")
-        except Exception as e:
-            print(f"Error converting to HTML: {e}", file=sys.stderr)
+            temp_file_path = render_browser_preview(text)
+        except OSError as e:
+            print(f"Error opening browser preview: {e}", file=sys.stderr)
             return EXIT_ERROR
-    else:
-        try:
-            render_markdown(text, wrap_width=args.wrap, theme=args.theme)
-        except Exception as e:
-            print(f"Error rendering markdown: {e}", file=sys.stderr)
-            return EXIT_ERROR
+        print(f"Browser preview opened: {temp_file_path}")
+        return EXIT_SUCCESS
+
+    try:
+        render_markdown(text, wrap_width=args.wrap, theme=args.theme)
+    except ClassNotFound:
+        print(f"Error: Unknown theme: {args.theme}", file=sys.stderr)
+        return EXIT_ERROR
 
     return EXIT_SUCCESS
 
