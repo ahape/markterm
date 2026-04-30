@@ -17,7 +17,24 @@ function Show-Markdown {
   )
 
   begin {
-    $markterm = Get-Command markterm -ErrorAction SilentlyContinue
+    $markterm = $null
+
+    # Prefer the markterm binary inside a colocated .venv (matches README setup).
+    $venvCandidates = @(
+      (Join-Path $PSScriptRoot ".venv\Scripts\markterm.exe"),
+      (Join-Path $PSScriptRoot ".venv/bin/markterm")
+    )
+    foreach ($candidate in $venvCandidates) {
+      if (Test-Path -LiteralPath $candidate) {
+        $markterm = Get-Command $candidate -ErrorAction SilentlyContinue
+        break
+      }
+    }
+
+    if (-not $markterm) {
+      $markterm = Get-Command markterm -ErrorAction SilentlyContinue
+    }
+
     if (-not $markterm) {
       $python = Get-Command py -ErrorAction SilentlyContinue
       if (-not $python) {
