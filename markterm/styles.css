@@ -176,7 +176,6 @@ li.todo-item.completed code {
     font-size: 0.8em;
     cursor: pointer;
     float: right;
-    margin-top: -35px;
     transition: all 0.2s;
 }
 
